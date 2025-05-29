@@ -49,9 +49,6 @@ def affine_backward(dout, cache):
     """
     x, w, b = cache
     x_hat = x.reshape(x.shape[0], -1)
-    print(x.shape,w.shape,b.shape, dout.shape)
-    print(np.dot(dout, w.T).shape)
-    print(dout[0].shape)
     dx, dw, db = np.dot(dout,w.T), np.dot(x_hat.T, dout), np.sum(dout, axis=0)
     dx = dx.reshape(x.shape)  # Reshape dx back to the original input shape
     #############################################################################
@@ -74,7 +71,7 @@ def relu_forward(x):
     - out: Output, of the same shape as x
     - cache: x
     """
-    out = None
+    out = np.maximum(0, x)  # Apply ReLU activation function
     #############################################################################
     # TODO: Implement the ReLU forward pass.                                    #
     #############################################################################
@@ -97,6 +94,7 @@ def relu_backward(dout, cache):
     - dx: Gradient with respect to x
     """
     dx, x = None, cache
+    dx = dout * (x > 0)  # Gradient of ReLU is 1 for x > 0, else 0
     #############################################################################
     # TODO: Implement the ReLU backward pass.                                   #
     #############################################################################
