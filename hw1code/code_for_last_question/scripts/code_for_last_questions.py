@@ -4,8 +4,6 @@ from torch import nn
 import numpy as np
 import matplotlib.pyplot as plt
 
-from hw1code.code_for_last_question.scripts.help_functions import compute_svd_plot_features
-
 width = 10
 f = lambda x: np.sin(2 * np.pi * x)
 model = nn.Sequential(nn.Linear(1, width),
@@ -61,6 +59,4 @@ for s in range(n_steps):
             print(f"Test loss: {test_loss.item()}")
 
 backward_and_plot_grad(X, model, "trained")
-compute_svd_plot_features(X, model)
-
 
