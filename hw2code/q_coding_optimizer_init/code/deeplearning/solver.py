@@ -1,6 +1,6 @@
 import numpy as np
 
-from deeplearning import optim
+from . import optim
 
 
 class Solver(object):

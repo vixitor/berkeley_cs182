@@ -3,8 +3,8 @@ from formatter import NullWriter
 
 import numpy as np
 
-from deeplearning.layers import *
-from deeplearning.layer_utils import *
+from ..layers import *
+from ..layer_utils import *
 
 
 class TwoLayerNet(object):
