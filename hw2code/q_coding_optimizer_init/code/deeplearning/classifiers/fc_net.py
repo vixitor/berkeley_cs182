@@ -192,14 +192,17 @@ class FullyConnectedNet(object):
             elif initialization == "he":
                 ############################################################################
                 ############################################################################
-                self.params["W{d}".format(d = i + 1)] = np.random.randn(dims[i], dims[i + 1]) * np.sqrt(2 / dims[i])
+                if i != self.num_layers - 1:
+                    self.params["W{d}".format(d = i + 1)] = np.random.randn(dims[i], dims[i + 1]) * np.sqrt(4 / (dims[i] + dims[i + 1]))
+                else :
+                    self.params[f"W{i + 1}"] = np.random.randn(dims[i], dims[i + 1]) * np.sqrt(2 / (dims[i] + dims[i + 1]))
                 ############################################################################
                 #                             END OF YOUR CODE                             #
                 ############################################################################
             elif initialization == "zero":
                 ############################################################################
                 ############################################################################
-                self.params["W{d}}".format(d = i + 1)] = np.zeros(dims[i], dims[i + 1])
+                self.params["W{d}".format(d = i + 1)] = np.zeros((dims[i], dims[i + 1]))
                 ############################################################################
                 #                             END OF YOUR CODE                             #
                 ############################################################################
@@ -251,7 +254,7 @@ class FullyConnectedNet(object):
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
         loss, dx = softmax_loss(scores, y)
-        loss += sum(np.sum(self.params[f'W{i + 1}'] ** 2) for i in range(self.num_layers))
+        loss += 0.5 * self.reg * sum(np.sum(self.params[f'W{i + 1}'] ** 2) for i in range(self.num_layers))
         dx, grads[f'W{self.num_layers}'], grads[f'b{self.num_layers}'] = affine_backward(dx, cache[-1])
         grads[f'W{self.num_layers}'] += self.reg * self.params[f'W{self.num_layers}']
         for i in range(self.num_layers - 1, 0, -1):

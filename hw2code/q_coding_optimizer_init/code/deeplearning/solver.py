@@ -177,7 +177,10 @@ class Solver(object):
         #############################################################################
         # TODO: Store the mean of l2 norm of each gradient in log_grad_norm_history #
         #############################################################################
-        pass  # TODO
+        norm = 0
+        for key, value in grads.items():
+            norm += np.sum(value ** 2)
+        self.log_grad_norm_history.append(norm)
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
