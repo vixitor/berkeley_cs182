@@ -1,6 +1,7 @@
 import numpy as np
 
-from deeplearning.layer_utils import *
+from ..layer_utils import *
+from ..layers import *
 
 
 class TwoLayerNet(object):
@@ -267,7 +268,28 @@ class FullyConnectedNet(object):
         # self.bn_params[1] to the forward pass for the second batch normalization #
         # layer, etc.                                                              #
         ############################################################################
+        cache = []
+        layer_input = X.reshape(X.shape[0], -1)
+        for i in range(self.num_layers):
+            W = self.params[f'W{i + 1}']
+            b = self.params[f'b{i + 1}']
+            affine_out, affine_cache = affine_forward(layer_input, W, b)
+            cache.append(affine_cache)
+            if i == self.num_layers - 1:
+                scores = affine_out
+                continue
+            if self.use_batchnorm :
+                gamma = self.params["gamma" + str(i + 1)]
+                beta = self.params["beta" + str(i + 1)]
+                batchnorm_out, batchnorm_cache = batchnorm_forward(affine_out, gamma, beta, self.bn_params[i])
+                cache.append(batchnorm_cache)
+                relu_in = batchnorm_out
+            else :
+                relu_in = affine_out
 
+            relu_out, relu_cache = relu_forward(relu_in)
+            layer_input = relu_out
+            cache.append(relu_cache)
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -292,6 +314,21 @@ class FullyConnectedNet(object):
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
         # FC scores -> softmax. Calculate loss and gradients
+        loss, dx = softmax_loss(scores, y)
+        loss += self.reg * 0.5 * sum(np.sum(self.params[f'W{i + 1}'] ** 2) for i in range(self.num_layers))
+        for i in range(self.num_layers - 1, -1, -1):
+            W = self.params[f'W{i + 1}']
+            if i == self.num_layers - 1:
+                dx, dw, db = affine_backward(dx, cache.pop())
+            else:
+                if self.use_batchnorm:
+                    dx, dgamma, dbeta = batchnorm_backward(dx, cache.pop())
+                    grads["gamma" + str(i + 1)] = dgamma
+                    grads["beta" + str(i + 1)] = dbeta
+                dx = relu_backward(dx, cache.pop())
+                dx, dw, db = affine_backward(dx, cache.pop())
+            grads[f'W{i + 1}'] = dw + self.reg * W
+            grads[f'b{i + 1}'] = db
 
         ############################################################################
         #                             END OF YOUR CODE                             #

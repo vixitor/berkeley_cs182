@@ -1,3 +1,5 @@
+from math import gamma
+
 import numpy as np
 from sympy.matrices.expressions.matadd import factor_of
 
@@ -168,18 +170,14 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         # the momentum variable to update the running mean and running variance,    #
         # storing your result in the running_mean and running_var variables.        #
         #############################################################################
-        cache = {}
+        cache = ()
         sample_mean = np.mean(x, axis = 0)
         sample_var = np.mean(np.square(x - sample_mean), axis=0)
         running_mean = momentum * running_mean + (1 - momentum) * sample_mean
         running_var = momentum * running_var + (1 - momentum) * sample_var
         z = (x - sample_mean) / (np.sqrt(sample_var + eps))
         out = np.dot(z, np.diag(gamma)) + beta
-        cache["mean"] = sample_mean
-        cache["var"] = sample_var
-        cache["z"] = z
-        cache["gamma"] = gamma
-        cache["eps"] = eps
+        cache = (x,sample_mean, sample_var, z, gamma, beta, eps)
         ###########################################################################
         #                            END OF YOUR CODE                             #
         ###########################################################################
@@ -227,14 +225,20 @@ def batchnorm_backward(dout, cache):
     # TODO: Implement the backward pass for batch normalization. Store the      #
     # results in the dx, dgamma, and dbeta variables.                           #
     #############################################################################
-    var = cache.get("var")
-    mean = cache.get("mean")
-    z = cache.get("z")
-    gamma = cache.get("gamma")
-    eps = cache.get("eps")
-
-    dzdx = 1 / np.sqrt(var + eps)
-    dzdvar =
+    x, mean, var, z, gamma, beta, eps = cache
+    n = x.shape[0]
+    dgamma = np.sum(dout * z, axis=0)
+    dbeta = np.sum(dout, axis=0)
+    dz = dout * gamma
+    dx1 = dz / np.sqrt(var + eps)
+    dvar = np.sum(dz * (-0.5 * (x - mean) / (np.sqrt(var + eps) ** 3)), axis=0)
+    print("dvar shape: {}".format(dvar.shape))
+    print("x shape: {}".format(x.shape))
+    print("mean shape: {}".format(mean.shape))
+    dx2 = dvar * 2 / n * (x - mean)
+    dmean = np.sum(dz * -1 / np.sqrt(var + eps), axis=0)
+    dx3 = dmean / n;
+    dx = dx1 + dx2 + dx3;
     #############################################################################
     #                             END OF YOUR CODE                              #
     #############################################################################
