@@ -31,7 +31,11 @@ class NeuralNetwork(nn.Module):
         #
         # The first conv block has 16 filters
         #######################################################################
-
+        self.conv1 = nn.Conv2d(in_channels=3,out_channels=16,kernel_size=(3, 3),stride=1, padding=1)
+        if self.do_batchnorm :
+          self.bn1 = nn.BatchNorm2d(num_features=16)
+        self.relu1 = nn.ReLU()
+        self.pool1 = nn.MaxPool2d(kernel_size=(2, 2), stride = 2)
         #######################################################################
         # End of your code
         #######################################################################
@@ -42,7 +46,11 @@ class NeuralNetwork(nn.Module):
         # The second convolutional block has the same structure as the first,
         #  except that the conv layer has 32 filters
         #######################################################################
-
+        self.conv2 = nn.Conv2d(in_channels=16,out_channels=32,kernel_size=(3, 3),stride=1, padding=1)
+        if self.do_batchnorm:
+          self.bn2 = nn.BatchNorm2d(num_features=32)
+        self.relu2 = nn.ReLU()
+        self.pool2 = nn.MaxPool2d(kernel_size=(2, 2), stride = 2)
         #######################################################################
         # End of your code
         #######################################################################
@@ -56,7 +64,10 @@ class NeuralNetwork(nn.Module):
         # The conv layer is followed by an optional spatial batch norm layer,
         #  and a ReLU activation layer. No pooling in this block.
         #######################################################################
-
+        self.conv3 = nn.Conv2d(in_channels=32,out_channels=64,kernel_size=(3, 3),stride=2, padding=1)
+        if self.do_batchnorm:
+          self.bn3 = nn.BatchNorm2d(64)
+        self.relu3 = nn.ReLU()
         #######################################################################
         # End of your code
         #######################################################################
@@ -75,7 +86,11 @@ class NeuralNetwork(nn.Module):
         # Feel free to check the hints of tensor shapes in the `forward` method
         #
         #######################################################################
-
+        self.fc1 = nn.Linear(1024, 256)
+        self.relu4 = nn.ReLU()
+        if self.p_dropout > 0.0:
+          self.drop = nn.Dropout1d(p_dropout)
+        self.fc2 = nn.Linear(256, 100)
         #######################################################################
         # End of your code
         #######################################################################
