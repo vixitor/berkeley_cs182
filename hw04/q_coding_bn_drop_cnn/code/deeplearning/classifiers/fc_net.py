@@ -1,7 +1,9 @@
 import numpy as np
 
-from ..layer_utils import *
-from ..layers import *
+from deeplearning.layer_utils import *
+from deeplearning.layers import *
+
+from hw04.q_coding_bn_drop_cnn.code.deeplearning.layers import dropout_forward, dropout_backward
 
 
 class TwoLayerNet(object):
@@ -269,27 +271,28 @@ class FullyConnectedNet(object):
         # layer, etc.                                                              #
         ############################################################################
         cache = []
-        layer_input = X.reshape(X.shape[0], -1)
+        layer_in = X
         for i in range(self.num_layers):
-            W = self.params[f'W{i + 1}']
-            b = self.params[f'b{i + 1}']
-            affine_out, affine_cache = affine_forward(layer_input, W, b)
-            cache.append(affine_cache)
+            w = self.params["W" + str(i + 1)]
+            b = self.params["b" + str(i + 1)]
             if i == self.num_layers - 1:
-                scores = affine_out
-                continue
-            if self.use_batchnorm :
-                gamma = self.params["gamma" + str(i + 1)]
-                beta = self.params["beta" + str(i + 1)]
-                batchnorm_out, batchnorm_cache = batchnorm_forward(affine_out, gamma, beta, self.bn_params[i])
-                cache.append(batchnorm_cache)
-                relu_in = batchnorm_out
+                scores, layer_cache = affine_forward(layer_in, w, b)
+                cache.append(layer_cache)
             else :
-                relu_in = affine_out
 
-            relu_out, relu_cache = relu_forward(relu_in)
-            layer_input = relu_out
-            cache.append(relu_cache)
+                #maybe sth wrong when using batchnorm and dropout
+
+                if self.use_batchnorm:
+                    gamma = self.params["gamma" + str(i + 1)]
+                    beta = self.params["beta" + str(i + 1)]
+                    layer_in, layer_cache = affine_bn_relu_forward(layer_in, w, b, gamma, beta, self.bn_params[i])
+                else :
+                    layer_in, layer_cache = affine_relu_forward(layer_in, w, b)
+                cache.append(layer_cache)
+                if self.use_dropout:
+                    layer_in, dropout_cache = dropout_forward(layer_in, self.dropout_param)
+                    cache.append(dropout_cache)
+
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -320,16 +323,21 @@ class FullyConnectedNet(object):
             W = self.params[f'W{i + 1}']
             if i == self.num_layers - 1:
                 dx, dw, db = affine_backward(dx, cache.pop())
+                grads["W" + str(i + 1)] = dw + self.reg * W ** 2
+                grads["b" + str(i + 1)] = db
             else:
+                if self.use_dropout:
+                    dx = dropout_backward(dx, cache.pop())
                 if self.use_batchnorm:
-                    dx, dgamma, dbeta = batchnorm_backward(dx, cache.pop())
+                    dx, dw, db, dgamma, dbeta = affine_bn_relu_backward(dx, cache.pop())
+                    grads["W" + str(i + 1)] = dw + self.reg * W
+                    grads["b" + str(i + 1)] = db
                     grads["gamma" + str(i + 1)] = dgamma
                     grads["beta" + str(i + 1)] = dbeta
-                dx = relu_backward(dx, cache.pop())
-                dx, dw, db = affine_backward(dx, cache.pop())
-            grads[f'W{i + 1}'] = dw + self.reg * W
-            grads[f'b{i + 1}'] = db
-
+                else :
+                    dx, dw, db = affine_relu_backward(dx, cache.pop())
+                    grads["W" + str(i + 1)] = dw + self.reg * W
+                    grads["b" + str(i + 1)] = db
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################

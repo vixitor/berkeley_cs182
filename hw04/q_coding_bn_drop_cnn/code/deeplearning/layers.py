@@ -1,8 +1,5 @@
-from math import gamma
 
 import numpy as np
-from sympy.matrices.expressions.matadd import factor_of
-
 
 def affine_forward(x, w, b):
     """
@@ -232,9 +229,6 @@ def batchnorm_backward(dout, cache):
     dz = dout * gamma
     dx1 = dz / np.sqrt(var + eps)
     dvar = np.sum(dz * (-0.5 * (x - mean) / (np.sqrt(var + eps) ** 3)), axis=0)
-    print("dvar shape: {}".format(dvar.shape))
-    print("x shape: {}".format(x.shape))
-    print("mean shape: {}".format(mean.shape))
     dx2 = dvar * 2 / n * (x - mean)
     dmean = np.sum(dz * -1 / np.sqrt(var + eps), axis=0)
     dx3 = dmean / n;
@@ -308,7 +302,8 @@ def dropout_forward(x, dropout_param):
         # TODO: Implement the training phase forward pass for inverted dropout.   #
         # Store the dropout mask in the mask variable.                            #
         ###########################################################################
-        pass
+        mask = np.random.binomial(n=1, p=1-p, size=x.shape)
+        out = x * mask
         ###########################################################################
         #                            END OF YOUR CODE                             #
         ###########################################################################
@@ -337,7 +332,7 @@ def dropout_backward(dout, cache):
         ###########################################################################
         # TODO: Implement the training phase backward pass for inverted dropout.  #
         ###########################################################################
-        pass
+        dx = dout * mask
         ###########################################################################
         #                            END OF YOUR CODE                             #
         ###########################################################################

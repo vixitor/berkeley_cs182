@@ -1,4 +1,4 @@
-from layers import *
+from deeplearning.layers import *
 
 
 def affine_relu_forward(x, w, b):
